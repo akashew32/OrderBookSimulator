@@ -1,0 +1,12 @@
+.DS_Store
+.cache/
+build/
+compile_commands.json
+
+# Local compiled binaries from earlier manual builds.
+hello
+test_order_book
+test_matching_engine
+
+# Runtime uploads are local working data, not source.
+data/uploads/

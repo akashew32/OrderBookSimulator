@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Limit Order Book</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">C++ matching engine stream</p>
+        <h1>Live Limit Order Book</h1>
+      </div>
+      <div class="connection">
+        <span id="statusDot" class="dot"></span>
+        <span id="connectionStatus">Connecting</span>
+      </div>
+    </header>
+
+    <section class="metrics">
+      <article>
+        <span>Orders</span>
+        <strong id="ordersProcessed">0</strong>
+      </article>
+      <article>
+        <span>Trades</span>
+        <strong id="tradesExecuted">0</strong>
+      </article>
+      <article>
+        <span>Volume</span>
+        <strong id="volumeExecuted">0</strong>
+      </article>
+      <article>
+        <span>Spread</span>
+        <strong id="spread">--</strong>
+      </article>
+      <article>
+        <span>Latency</span>
+        <strong id="latency">--</strong>
+      </article>
+      <article>
+        <span>Throughput</span>
+        <strong id="throughput">--</strong>
+      </article>
+      <article>
+        <span>Canceled</span>
+        <strong id="canceledOrders">0</strong>
+      </article>
+      <article>
+        <span>Modified</span>
+        <strong id="modifiedOrders">0</strong>
+      </article>
+      <article>
+        <span>Pending</span>
+        <strong id="pendingEvents">0</strong>
+      </article>
+      <article>
+        <span>Dropped</span>
+        <strong id="droppedEvents">0</strong>
+      </article>
+      <article>
+        <span>Fill Delay</span>
+        <strong id="fillDelay">--</strong>
+      </article>
+      <article>
+        <span>Missed</span>
+        <strong id="missedTrades">0</strong>
+      </article>
+      <article>
+        <span>Slippage</span>
+        <strong id="totalSlippage">--</strong>
+      </article>
+    </section>
+
+    <section class="grid">
+      <section class="panel controls">
+        <header>
+          <h2>Simulation & Replay</h2>
+          <span id="runState">Stopped</span>
+        </header>
+        <div class="control-buttons">
+          <button id="startBtn" type="button">Start</button>
+          <button id="stopBtn" type="button">Stop</button>
+          <button id="replayPlayBtn" type="button">Replay</button>
+          <button id="replayStepBtn" type="button">Step</button>
+        </div>
+        <label>
+          <span>Orders per second</span>
+          <input id="speedInput" type="range" min="1" max="100" value="8">
+          <b id="speedValue">8</b>
+        </label>
+        <label>
+          <span>Generated order limit</span>
+          <input id="orderLimitInput" type="number" min="0" value="500">
+        </label>
+        <div class="assumptions compact">
+          <label>
+            <span>Order latency ms</span>
+            <input id="orderLatencyInput" type="number" min="0" max="5000" value="25">
+          </label>
+          <label>
+            <span>Market data latency ms</span>
+            <input id="marketLatencyInput" type="number" min="0" max="5000" value="0">
+          </label>
+        </div>
+        <label>
+          <span>Replay CSV file</span>
+          <select id="csvSelect"></select>
+        </label>
+        <div class="upload-row">
+          <input id="csvUploadInput" type="file" accept=".csv">
+          <button id="uploadCsvBtn" type="button">Upload</button>
+        </div>
+        <div class="control-buttons">
+          <button id="loadReplayBtn" type="button">Load CSV</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="file-meta" id="csvMetadata">No CSV selected</div>
+        <label>
+          <span>Replay events per second</span>
+          <input id="replaySpeedInput" type="range" min="1" max="200" value="8">
+          <b id="replaySpeedValue">8</b>
+        </label>
+        <label>
+          <span>Jump to timestamp</span>
+          <input id="jumpInput" type="number" min="0" value="0">
+        </label>
+        <button id="jumpBtn" type="button">Jump</button>
+        <div class="replay-status" id="replayStatus">No CSV loaded</div>
+      </section>
+
+      <section class="panel manual">
+        <header>
+          <h2>Manual Order Entry</h2>
+          <span>Sent to backend</span>
+        </header>
+        <form id="orderForm">
+          <div class="segmented">
+            <label><input type="radio" name="side" value="Buy" checked><span>Buy</span></label>
+            <label><input type="radio" name="side" value="Sell"><span>Sell</span></label>
+          </div>
+          <div class="row">
+            <label>
+              <span>Type</span>
+              <select id="orderType">
+                <option>Limit</option>
+                <option>Market</option>
+              </select>
+            </label>
+            <label>
+              <span>Price</span>
+              <input id="priceInput" type="number" min="1" value="100">
+            </label>
+            <label>
+              <span>Quantity</span>
+              <input id="quantityInput" type="number" min="1" value="10">
+            </label>
+          </div>
+          <button type="submit">Submit Order</button>
+        </form>
+        <div class="assumptions">
+          <label>
+            <span>Fee/share</span>
+            <input id="feeInput" type="number" min="0" step="0.001" value="0.01">
+          </label>
+          <label>
+            <span>Slippage/share</span>
+            <input id="slippageInput" type="number" min="0" step="0.001" value="0.02">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel book">
+        <header>
+          <h2>Level II Book</h2>
+          <div class="best">
+            <span class="bid">Bid <b id="bestBid">--</b></span>
+            <span class="ask">Ask <b id="bestAsk">--</b></span>
+          </div>
+        </header>
+        <div class="book-head">
+          <span>Bid Size</span>
+          <span>Price</span>
+          <span>Ask Size</span>
+        </div>
+        <div id="bookRows" class="book-rows"></div>
+      </section>
+
+      <section class="panel price">
+        <header>
+          <h2>Last Traded Price</h2>
+          <span id="lastPrice">No trades</span>
+        </header>
+        <canvas id="priceChart" width="900" height="360"></canvas>
+      </section>
+
+      <section class="panel depth">
+        <header>
+          <h2>Depth Chart</h2>
+          <span>Cumulative volume</span>
+        </header>
+        <canvas id="depthChart" width="900" height="300"></canvas>
+      </section>
+
+      <section class="panel histogram">
+        <header>
+          <h2>Volume Histogram</h2>
+          <span>Executed volume</span>
+        </header>
+        <canvas id="volumeChart" width="900" height="260"></canvas>
+      </section>
+
+      <section class="panel tape">
+        <header>
+          <h2>Trade Tape</h2>
+          <span id="tradePrints">0 prints</span>
+        </header>
+        <div class="tape-head">
+          <span>Buy ID</span>
+          <span>Sell ID</span>
+          <span>Price</span>
+          <span>Qty</span>
+        </div>
+        <div id="tradeTape" class="trade-tape"></div>
+      </section>
+
+      <section class="panel strategies">
+        <header>
+          <h2>Strategy Comparison</h2>
+          <span>All models run in C++</span>
+        </header>
+        <div class="strategy-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Strategy</th>
+                <th>P&L</th>
+                <th>Inv</th>
+                <th>Trades</th>
+                <th>Win</th>
+                <th>Avg Fill</th>
+                <th>Drawdown</th>
+                <th>Sharpe</th>
+                <th>Exposure</th>
+                <th>Fees/Slip</th>
+                <th>Volume</th>
+                <th>Active</th>
+                <th>C/M</th>
+                <th>Missed</th>
+                <th>Delay</th>
+              </tr>
+            </thead>
+            <tbody id="strategyRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel lifecycle">
+        <header>
+          <h2>Order Lifecycle</h2>
+          <span>Delayed actions and active orders</span>
+        </header>
+        <div class="lifecycle-wrap">
+          <div>
+            <div class="mini-head">Active Orders</div>
+            <div id="activeOrders" class="mini-list"></div>
+          </div>
+          <div>
+            <div class="mini-head">Recent Lifecycle Events</div>
+            <div id="lifecycleEvents" class="mini-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel systems">
+        <header>
+          <h2>Systems Runtime</h2>
+          <span id="processPhase">Starting</span>
+        </header>
+        <div class="systems-grid">
+          <div>
+            <div class="mini-head">Thread Roles</div>
+            <div id="threadRoles" class="mini-list systems-list"></div>
+          </div>
+          <div>
+            <div class="mini-head">Queues & Backpressure</div>
+            <div id="queueHealth" class="mini-list systems-list"></div>
+          </div>
+          <div>
+            <div class="mini-head">Synchronization</div>
+            <div id="syncMap" class="mini-list systems-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel optimizer">
+        <header>
+          <h2>Parameter Optimization</h2>
+          <span id="optimizationStatus">Idle</span>
+        </header>
+        <div class="optimizer-controls">
+          <label>
+            <span>Strategy</span>
+            <select id="optimizationStrategy">
+              <option>Market Making</option>
+              <option>Momentum</option>
+              <option>Mean Reversion</option>
+              <option>Book Imbalance</option>
+            </select>
+          </label>
+          <label>
+            <span>Rank by</span>
+            <select id="rankMetric">
+              <option value="pnl">P&L</option>
+              <option value="sharpe">Sharpe-like</option>
+              <option value="winRate">Win rate</option>
+              <option value="drawdown">Lowest drawdown</option>
+              <option value="volume">Volume</option>
+            </select>
+          </label>
+          <label>
+            <span>Train events</span>
+            <input id="trainWindow" type="number" min="10" value="60">
+          </label>
+          <label>
+            <span>Test events</span>
+            <input id="testWindow" type="number" min="10" value="30">
+          </label>
+          <button id="runOptimizationBtn" type="button">Run Optimization</button>
+          <button id="exportOptimizationBtn" type="button">Export Results</button>
+        </div>
+        <div id="bestConfig" class="best-config">No optimization run yet</div>
+        <div class="strategy-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Parameters</th>
+                <th>IS P&L</th>
+                <th>OOS P&L</th>
+                <th>OOS Trades</th>
+                <th>OOS Win</th>
+                <th>OOS DD</th>
+                <th>OOS Sharpe</th>
+                <th>Fees/Slip</th>
+                <th>Volume</th>
+              </tr>
+            </thead>
+            <tbody id="optimizationRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel optcharts">
+        <header>
+          <h2>Optimization Curves</h2>
+          <span>Best out-of-sample run</span>
+        </header>
+        <canvas id="optimizationChart" width="900" height="260"></canvas>
+      </section>
+
+      <section class="panel heatmap">
+        <header>
+          <h2>Parameter Heatmap</h2>
+          <span>Rank score by configuration</span>
+        </header>
+        <div id="parameterHeatmap" class="heatmap-grid"></div>
+      </section>
+
+      <section class="panel pnl">
+        <header>
+          <h2>Strategy P&L Curves</h2>
+          <span>Mark-to-market</span>
+        </header>
+        <canvas id="pnlChart" width="900" height="260"></canvas>
+      </section>
+
+      <section class="panel risk">
+        <header>
+          <h2>Drawdown & Inventory</h2>
+          <span>Risk view</span>
+        </header>
+        <canvas id="riskChart" width="900" height="260"></canvas>
+      </section>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

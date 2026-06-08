@@ -1,0 +1,32 @@
+[
+  {
+    "ticker": "AAPL",
+    "source": "https://huggingface.co/datasets/totalorganfailure/lobster-data/resolve/main/LOBSTER_SampleFile_AAPL_2012-06-21_1/AAPL_2012-06-21_34200000_57600000_message_1.csv",
+    "output": "data/online_replay/aapl_lobster_replay.csv",
+    "rows": 350
+  },
+  {
+    "ticker": "AMZN",
+    "source": "https://huggingface.co/datasets/totalorganfailure/lobster-data/resolve/main/LOBSTER_SampleFile_AMZN_2012-06-21_1/AMZN_2012-06-21_34200000_57600000_message_1.csv",
+    "output": "data/online_replay/amzn_lobster_replay.csv",
+    "rows": 350
+  },
+  {
+    "ticker": "GOOG",
+    "source": "https://huggingface.co/datasets/totalorganfailure/lobster-data/resolve/main/LOBSTER_SampleFile_GOOG_2012-06-21_1/GOOG_2012-06-21_34200000_57600000_message_1.csv",
+    "output": "data/online_replay/goog_lobster_replay.csv",
+    "rows": 350
+  },
+  {
+    "ticker": "INTC",
+    "source": "https://huggingface.co/datasets/totalorganfailure/lobster-data/resolve/main/LOBSTER_SampleFile_INTC_2012-06-21_1/INTC_2012-06-21_34200000_57600000_message_1.csv",
+    "output": "data/online_replay/intc_lobster_replay.csv",
+    "rows": 350
+  },
+  {
+    "ticker": "MSFT",
+    "source": "https://huggingface.co/datasets/totalorganfailure/lobster-data/resolve/main/LOBSTER_SampleFile_MSFT_2012-06-21_1/MSFT_2012-06-21_34200000_57600000_message_1.csv",
+    "output": "data/online_replay/msft_lobster_replay.csv",
+    "rows": 350
+  }
+]

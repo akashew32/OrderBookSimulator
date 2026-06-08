@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PulseTrade Guide</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="doc-body">
+  <main class="doc-shell">
+    <nav class="doc-nav">
+      <a href="/">Home</a>
+      <a href="/app.html">Dashboard</a>
+      <a href="/behind.html">Behind the Scenes</a>
+    </nav>
+
+    <header class="doc-hero">
+      <p class="eyebrow">Instruction guide</p>
+      <h1>PulseTrade Guide</h1>
+      <p>Use this page as the plain-English map for the entire site.</p>
+    </header>
+
+    <section class="doc-grid">
+      <article class="doc-card">
+        <h2>1. Start With Data</h2>
+        <p>Use the CSV dropdown to choose a replay file. The metadata box shows the file name, event count, start and end timestamps, and detected schema.</p>
+        <p>To add your own data, choose a CSV from your computer and press Upload. If the file has the required columns, it appears in the dropdown automatically.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>2. Replay Historical Markets</h2>
+        <p>Press Load CSV, then use Replay to play events through the C++ matching engine. Step advances one event at a time. Jump moves to a timestamp.</p>
+        <p>Replay speed controls how quickly historical events move through the dashboard.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>3. Watch The Order Book</h2>
+        <p>The Level II book shows bids and asks by price level. The best bid is green and the best ask is red. Bar width shows relative size at each level.</p>
+        <p>The depth chart converts each side into cumulative volume so you can see where liquidity is concentrated.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>4. Read Trades And Charts</h2>
+        <p>The trade tape streams executed trades with buy order ID, sell order ID, price, and quantity. New prints animate as they arrive.</p>
+        <p>The price chart tracks last traded price. The volume histogram shows traded volume over time.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>5. Submit Manual Orders</h2>
+        <p>Choose Buy or Sell, select Limit or Market, enter price and quantity, and submit. The order goes directly into the backend and the book updates live.</p>
+        <p>Market orders ignore the price field. Limit orders rest if they do not cross the opposite side.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>6. Simulate Latency</h2>
+        <p>Order latency delays strategy actions before they reach the engine. Market data latency delays what strategies see before deciding.</p>
+        <p>Watch pending events, missed opportunities, fill delay, and slippage to see how latency changes execution quality.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>7. Compare Strategies</h2>
+        <p>The strategy table compares market making, momentum, mean reversion, and order book imbalance models.</p>
+        <p>P&L, inventory, trades, win rate, drawdown, exposure, fees, volume, cancellations, modifications, and delay are tracked separately.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>8. Run Optimization</h2>
+        <p>Select a CSV, strategy, ranking metric, train window, and test window. Press Run Optimization to sweep parameter combinations.</p>
+        <p>The optimizer ranks configurations, shows the best setup, compares in-sample and out-of-sample results, and draws curves for the best run.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>9. Inspect Systems Runtime</h2>
+        <p>The Systems Runtime panel shows process phase, thread roles, queue capacity, dropped events, and synchronization guards.</p>
+        <p>Use it while simulation or replay is running to connect the trading workflow to processes, memory, concurrency, and backpressure.</p>
+      </article>
+
+      <article class="doc-card">
+        <h2>10. Export Results</h2>
+        <p>Press Export Results after optimization to download a CSV summary of parameter rankings, P&L, trades, drawdown, and volume.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PulseTrade Behind the Scenes</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="doc-body">
+  <main class="doc-shell">
+    <nav class="doc-nav">
+      <a href="/">Home</a>
+      <a href="/app.html">Dashboard</a>
+      <a href="/guide.html">Guide</a>
+    </nav>
+
+    <header class="doc-hero">
+      <p class="eyebrow">Behind the scenes</p>
+      <h1>How PulseTrade Is Built</h1>
+      <p>A concise map of the codebase, the ideas each file uses, and the challenges I worked through while building it.</p>
+    </header>
+
+    <section class="doc-card tree-card">
+      <h2>File Tree</h2>
+      <pre class="file-tree"><code>LimitOrderBookSimulator/
+├── CMakeLists.txt
+├── README.md
+├── data/
+│   ├── sample_replay.csv
+│   ├── online_replay/
+│   └── online_sources/
+├── frontend/
+│   ├── index.html
+│   ├── app.html
+│   ├── guide.html
+│   ├── behind.html
+│   ├── app.js
+│   └── styles.css
+├── include/
+│   ├── order.hpp
+│   ├── trade.hpp
+│   ├── order_book.hpp
+│   ├── matching_engine.hpp
+│   ├── metrics.hpp
+│   ├── object_pool.hpp
+│   ├── os_concepts.hpp
+│   ├── csv_replay.hpp
+│   ├── csv_files.hpp
+│   ├── event_queue.hpp
+│   ├── optimizer.hpp
+│   ├── simulator.hpp
+│   ├── strategy.hpp
+│   └── thread_safe_queue.hpp
+├── src/
+│   ├── order_book.cpp
+│   ├── matching_engine.cpp
+│   ├── metrics.cpp
+│   ├── csv_replay.cpp
+│   ├── csv_files.cpp
+│   ├── event_queue.cpp
+│   ├── optimizer.cpp
+│   ├── strategy.cpp
+│   ├── live_server.cpp
+│   ├── simulator.cpp
+│   └── main.cpp
+└── tests/
+    ├── test_order_book.cpp
+    ├── test_matching_engine.cpp
+    ├── test_order_lifecycle.cpp
+    ├── test_latency.cpp
+    ├── test_csv_replay.cpp
+    ├── test_csv_files.cpp
+    ├── test_optimizer.cpp
+    ├── test_ostep_systems.cpp
+    ├── test_strategy.cpp
+    └── validate_replay_file.cpp</code></pre>
+    </section>
+
+    <section class="file-notes">
+      <article><h2>order.hpp</h2><p>Defines an order: ID, side, type, price, quantity, and timestamp. Key topics: market data modeling, enum types, unique identifiers.</p></article>
+      <article><h2>trade.hpp</h2><p>Defines executed trades with buyer, seller, price, quantity, and timestamp. Key topics: execution records and trade tape output.</p></article>
+      <article><h2>order_book.hpp / order_book.cpp</h2><p>Maintains bid and ask price levels using ordered maps and FIFO deques. Key topics: price-time priority, cancellation, modification, active-order lookup, matching loops.</p></article>
+      <article><h2>matching_engine.hpp / matching_engine.cpp</h2><p>Wraps the order book and records metrics whenever orders, trades, cancels, and modifies occur. Key topics: engine boundary, aggregation, matching orchestration.</p></article>
+      <article><h2>metrics.hpp / metrics.cpp</h2><p>Tracks orders, trades, volume, latency, fill delay, cancels, modifies, missed opportunities, and slippage. Key topics: counters, averages, performance telemetry.</p></article>
+      <article><h2>csv_replay.hpp / csv_replay.cpp</h2><p>Parses timestamped CSV rows into replay events and sorts them by time. Key topics: schema detection, CSV parsing, replay sequencing, validation errors.</p></article>
+      <article><h2>csv_files.hpp / csv_files.cpp</h2><p>Discovers replay CSVs, validates uploads, stores uploaded files, and returns metadata. Key topics: filesystem traversal, safe paths, upload validation.</p></article>
+      <article><h2>event_queue.hpp / event_queue.cpp</h2><p>Stores delayed strategy actions by timestamp and caps queue growth. Key topics: priority queues, deterministic event ordering, latency simulation, backpressure.</p></article>
+      <article><h2>object_pool.hpp</h2><p>Provides RAII handles for reusable preallocated objects. Key topics: heap ownership, object reuse, allocation efficiency, cleanup.</p></article>
+      <article><h2>os_concepts.hpp</h2><p>Centralizes lifecycle, thread, and memory diagnostics. Key topics: process phases, named threads, stack versus heap visibility, synchronized logging.</p></article>
+      <article><h2>strategy.hpp / strategy.cpp</h2><p>Defines the strategy interface and implements market making, momentum, mean reversion, and imbalance models. Key topics: polymorphism, order generation, active order management, P&L attribution.</p></article>
+      <article><h2>optimizer.hpp / optimizer.cpp</h2><p>Builds parameter grids, splits walk-forward windows, evaluates strategies, ranks configurations, and produces curves. Key topics: grid search, walk-forward testing, return/risk metrics.</p></article>
+      <article><h2>live_server.cpp</h2><p>Serves the frontend, streams state through Server-Sent Events, receives commands, handles uploads, runs replay, and triggers optimization. Key topics: process lifecycle, lightweight HTTP, SSE, JSON assembly, threads, synchronization.</p></article>
+      <article><h2>app.html / app.js / styles.css</h2><p>Builds the trading and systems interface, charts, controls, upload flow, optimization dashboard, and docs pages. Key topics: responsive UI, canvas charts, live rendering, queue and thread observability.</p></article>
+      <article><h2>tests/</h2><p>Assert-based C++ tests verify matching, lifecycle behavior, latency, replay parsing, CSV discovery, strategy behavior, optimizer correctness, queues, pools, and race-prevention scenarios. Key topics: scenario testing, stress testing, regression safety.</p></article>
+    </section>
+
+    <section class="doc-card">
+      <h2>Challenges I Encountered And Overcame</h2>
+      <p>I had to make cancellation and modification safe without breaking price-time priority. I solved that by tracking active order IDs, removing empty price levels, and treating price changes as a reinsertion while same-price quantity edits keep priority.</p>
+      <p>I also had to prevent latency from feeling cosmetic. I overcame that by routing strategy submissions, cancels, and modifies through a timestamped event queue, so delayed orders can actually miss fills or receive worse prices.</p>
+      <p>CSV handling became tricky because market data files are not always identical. I handled that by adding schema detection, upload validation, helpful parse errors, and a metadata-driven dropdown instead of requiring manually typed paths.</p>
+      <p>The optimizer needed to compare strategies fairly. I solved that by replaying the same event data across every parameter configuration and separating in-sample training windows from later out-of-sample test windows to avoid lookahead bias.</p>
+      <p>The systems layer needed to be visible without distracting from the simulator. I added bounded queues, named thread roles, lifecycle logs, synchronization notes, and a dashboard panel that surfaces those concepts in live state.</p>
+      <p>Finally, the frontend could have become overwhelming. I kept it usable by separating live trading, replay controls, order lifecycle state, systems runtime, strategy comparison, optimization results, and documentation into distinct pages and panels.</p>
+    </section>
+  </main>
+</body>
+</html>
