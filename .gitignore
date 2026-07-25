@@ -1,6 +1,7 @@
 .DS_Store
 .cache/
 build/
+build-bench/
 compile_commands.json
 
 # Local compiled binaries from earlier manual builds.
@@ -10,3 +11,8 @@ test_matching_engine
 
 # Runtime uploads are local working data, not source.
 data/uploads/
+
+# Generated benchmark artifacts. Keep benchmarks/results/.gitkeep tracked.
+benchmarks/results/*
+!benchmarks/results/.gitkeep
+benchmark-report-*.txt

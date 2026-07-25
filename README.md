@@ -377,3 +377,24 @@ cmake --build build --target validate_replay_file
 ```
 
 The existing order book and matching engine tests still cover matching behavior, partial fills, market orders, and price-time priority.
+
+## Benchmarking
+
+The project includes an isolated matching-engine benchmark target that excludes the live dashboard, HTTP/SSE networking, CSV parsing, frontend rendering, strategy computation, sleeps, and logging.
+
+Build and run a Release benchmark:
+
+```sh
+cmake -S . -B build-bench -DCMAKE_BUILD_TYPE=Release
+cmake --build build-bench --target order_book_benchmark test_benchmark_suite
+./build-bench/test_benchmark_suite
+./build-bench/order_book_benchmark --scenario mixed --operations 1000000 --iterations 5 --seed 42
+```
+
+Run every benchmark scenario:
+
+```sh
+./scripts/run_benchmarks.sh
+```
+
+Benchmark results are written as CSV and JSON under `benchmarks/results/`. Generated result files are ignored by git. See `benchmarks/README.md` for methodology, scenarios, output fields, limitations, and resume-safe reporting guidance.
