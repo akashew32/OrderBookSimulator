@@ -104,5 +104,3 @@ Dashboard throughput is not the same as isolated matching-engine throughput. The
 Synthetic benchmark numbers are also not production exchange latency. They do not include kernel bypass, colocated networking, market-data feed handlers, risk controls, persistence, failover, or real exchange protocol work.
 
 Known noise sources include CPU frequency scaling, other running applications, thermal throttling, debug builds, sanitizer builds, and small sample counts. Generate final numbers on an idle machine with a Release build.
-
-For resume language, prefer conservative measured medians, include workload and hardware, and avoid phrases like "low latency", "high frequency", or comparisons to production exchanges.
